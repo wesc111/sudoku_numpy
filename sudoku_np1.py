@@ -145,7 +145,10 @@ class sudoku:
         # TBD
         return False
 
+    # print the sudoku array
+    # TBD: pretty print should be added 
     def print(self):
         print(self.suArray)
+    # print the comment
     def printComment(self):
         print(f"===== {self.comment}")
