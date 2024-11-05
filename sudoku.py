@@ -1,5 +1,5 @@
 # numpy example
-# WSC, 27-Oct-2024
+# WSC, 5-Nov-2024
 
 # read a string representing a 9x9 SUDOKU into a numpy array
 
@@ -51,12 +51,15 @@ suText.append("1......687.9.3......86..13.....8.3...4.3.1.8...7.2.....14..35....
 suComment.append("kleinezeitung, 05.01.2021 - mittel")
 
 # the number of the sudoku that should be tested
-TEST_SUDOKU_NUM = 10
+TEST_SUDOKU_NUM = 2
 
-PRINT_SUDOKU = True
+PRINT_SUDOKU = False
 TEST_SUDOKU_FUNC = False
 TEST_SUDOKU_CAND = False
-TEST_SUDOKU_SOLVER1 = True
+TEST_SUDOKU_LONE = False
+TEST_SUDOKU_HIDDEN_SINGLE = False
+TEST_SUDOKU_SOLVER1 = False
+TEST_SUDOKU_SOLVER_ALL = True
 
 if __name__ == '__main__':
     print(f"Total of {len(suText)} Sudokus available")
@@ -82,20 +85,33 @@ if __name__ == '__main__':
             mySudoku.printValListInCol(i)
 
     if TEST_SUDOKU_CAND:
-        for row in range(0,9):
-            for col in range(0,9):
-                mySudoku.printCandidateList(row,col)
+        mySudoku.calcAllCandidateList()
+        mySudoku.printAllCandidateList()      
+
+    if TEST_SUDOKU_LONE:
+         mySudoku.findLonePairs()
+
+    if TEST_SUDOKU_HIDDEN_SINGLE:
+        mySudoku.findHiddenSingles()
+        mySudoku.print()
 
     # run solver just with solveSingles() algorithm
     if TEST_SUDOKU_SOLVER1:
-        i=0
-        n=1
-        while (n>0):
-            n = mySudoku.solveSingles()
-            print(f"i={i}: num solved singles = {n}")
-            i+=1
+        print(f"==================== Sudoku number {TEST_SUDOKU_NUM} ========================================")
+        mySudoku = sudoku()
+        mySudoku.setSuArray(suText[TEST_SUDOKU_NUM])
+        mySudoku.setComment(suComment[TEST_SUDOKU_NUM])
         mySudoku.print()
-        if mySudoku.checkSolved():
-            print(f"SUCCESS: Sudoku is solved with SOLVER1")
-        else:
-            print(f"FAIL:    No Sudoku solution found with SOLVER1")
+        mySudoku.solver1(True)
+        mySudoku.print()
+
+    if TEST_SUDOKU_SOLVER_ALL:
+        for i in range(0,len(suText)):
+            print(f"==================== Sudoku number {i} ========================================")
+            mySudoku = sudoku()
+            mySudoku.setSuArray(suText[i])
+            mySudoku.setComment(suComment[i])
+            print(suComment[i])
+            if mySudoku.solver1():
+                mySudoku.print()
+
