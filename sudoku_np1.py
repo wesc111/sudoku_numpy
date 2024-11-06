@@ -1,11 +1,13 @@
 # sudoku_np1 sudoku class
 # SUDOKU based on numpy
-# Version 0.0, WSC, 5-Nov-2024
+# Version 0.0, WSC, 6-Nov-2024
 
 import numpy as np
 from enum import Enum
-
+import random
 import time
+
+USE_RANDOM_SEED = False
 
 # Class suElemT defines the type of a Sudoku element
 class suElemT(Enum):
@@ -13,6 +15,7 @@ class suElemT(Enum):
     FIXED = 1
     SOLVED_SINGLE = 2
     SOLVED_HIDDEN_SINGLE = 3
+    GUESS = 4
 
 # The candidate list for a sudoku element
 class candidateList():
@@ -25,9 +28,25 @@ class candidateList():
 
 # python class to solve SUDOKUs in a human way (without backtracking)
 class sudoku:
+    # a house is a group inside the Sudoku that is either row, col or block
+    HOUSE_T_ROW = 0
+    HOUSE_T_COL = 1
+    HOUSE_T_BLOCK = 2
     def __init__(self):
+        # arrays containing sudoku information
         self.suArray = np.zeros((9,9), dtype=np.int8)
         self.suArrayType = np.zeros((9,9), dtype=suElemT)
+        # arrays for store/recall
+        self.suArrayStore = np.zeros((9,9), dtype=np.int8)
+        self.suArrayTypeStore = np.zeros((9,9), dtype=suElemT)
+        if USE_RANDOM_SEED:
+            t = int(time.time()*1000)
+            rs = ((t & 0xff000000) >> 24) + \
+                ((t & 0x00ff0000) >>  8) + \
+                ((t & 0x0000ff00) <<  8) + \
+                ((t & 0x000000ff) << 24)
+            print(f"setting random seed to {rs}")
+            random.seed(rs)
 
     def setComment(self,string):
         self.comment = string
@@ -51,6 +70,18 @@ class sudoku:
             else:
                 col+=1
         self.calcAllCandidateList()
+
+    def store(self):
+        for row in range(0,9):
+            for col in range(0,9):
+                self.suArrayStore[row][col] =self.suArray[row][col]
+                self.suArrayTypeStore[row][col] = self.suArrayType[row][col]
+
+    def recall(self):
+        for row in range(0,9):
+            for col in range(0,9):
+                self.suArray[row][col] = self.suArrayStore[row][col]
+                self.suArrayType[row][col] = self.suArrayTypeStore[row][col]
 
     def getSuArray(self):
         return self.suArray
@@ -171,6 +202,7 @@ class sudoku:
                 numSolvedSinglesFound+=1
         return numSolvedSinglesFound
 
+    # find lone pairs: pairs within a row, col or block means that these can be removed in the candidate lists of the corresponding house
     def findLonePairs(self):
         # TBD, not finished now
         # i=0...row, 1...col, 2...block
@@ -179,20 +211,20 @@ class sudoku:
                 ddList=[]
                 # iterate through all elements
                 for elem in self.allCandidateList:
-                    if (i==0 and elem.row==j) or (i==1 and elem.col==j) or (i==2 and elem.block==j):
+                    if (i==self.HOUSE_T_ROW and elem.row==j) or (i==self.HOUSE_T_COL and elem.col==j) or (i==self.HOUSE_T_BLOCK and elem.block==j):
                         if len(elem.list)==2:
                             ddList.append(elem.list)
                 if len(ddList)>1:
                     dupFlag, dup = self.checkDuplicates(ddList)
                     if dupFlag:
-                        if i==0:
+                        if i==self.HOUSE_T_ROW:
                             print(f"LONE row={j}:  {dupFlag}, {dup}, {ddList}")
-                        if i==1:
+                        if i==self.HOUSE_T_COL:
                             print(f"LONE col={j}:  {dupFlag}, {dup}, {ddList}")
-                        if i==2:
+                        if i==self.HOUSE_T_BLOCK:
                             print(f"LONE block={j}: {dupFlag}, {dup}, {ddList}")
         return False
-    
+
     # find singles in the input list cc
     def findSingle(self, cc):
         oc = [0,0,0,0,0,0,0,0,0,0]
@@ -322,11 +354,12 @@ class sudoku:
                         return True, ll[i]
         return False, [0,0]
 
+    # SOLVER1: running algorithm to solve SUDOKU just with "paper & pencil" methods
+    # return value is True if sudoku is solved
     def solver1(self, debug=False):
-        startTime = time.time()
         i=m=0
         n=1
-        while n>0 or m>0 or i<20:
+        while n>0 or m>0:
             n = self.solveSingles()
             self.calcAllCandidateList()
             m = self.solveHiddenSingles(debug)
@@ -339,22 +372,51 @@ class sudoku:
             if debug and (n>0 or m>0):
                 print("")
             i+=1
-        endTime =time.time()
-        if self.checkSolved():
-            print(f"SUCCESS: Sudoku is solved with SOLVER1, elapsed time is {endTime-startTime:.3f}")
-            return True
-        else:
+        return self.checkSolved()
+    
+    # solver with guess loop
+    # return value is True if sudoku is solved + number of guesses
+    def solver2(self, max_guess_num, debug=False):
+        self.store()
+        solved = False
+        i=0
+        # if SUDOKU is not solved, start with guesses inside of following loop:
+        while solved==False and i<max_guess_num:
             if debug:
-                for elem in self.allCandidateList:
-                    elem.print()
-            print(f"FAIL:    No Sudoku solution found with SOLVER1, elapsed time is {endTime-startTime:.3f}")
-            return False
+                print(f"... guess number {i}")
+            self.doAGuess()
+            solved = self.solver1(debug)
+            if solved:
+                return True, i
+            else:
+                self.recall()
+            i+=1
+        return False, i
+        
+    def doAGuess(self, debug=False):
+        # and do a new guess out of the candidate list
+        self.calcAllCandidateList()
+        guessIsDone = False
+        numGuesses = random.randrange(2,6)
+        if debug:
+            print(f"doAGuess: numGuesses={numGuesses}")
+        for elem in self.allCandidateList:
+            row = elem.row
+            col = elem.col
+            # guess is done on elements with 2 entries in list
+            if len(elem.list)==2 and numGuesses>0:
+                index = random.randrange(0,2)
+                val = elem.list[index]
+                self.suArray[row][col] = val
+                self.suArrayType [row][col] = suElemT.GUESS
+                if debug:
+                    print(f"doAGuess: value at row={elem.row} col={elem.col} set to {val} (index={index})")
+                numGuesses-=1
 
     # print the sudoku array
-    # TBD: pretty print should be added 
     def print(self):
         print(self.suArray)
-    # print the comment
-    # just for information
+    
+    # print the comment / just for information about the origin of this specific SUDOKU
     def printComment(self):
         print(f"===== {self.comment}")

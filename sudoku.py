@@ -1,12 +1,15 @@
 # numpy example
-# WSC, 5-Nov-2024
+# WSC, 6-Nov-2024
 
 # read a string representing a 9x9 SUDOKU into a numpy array
 
 from sudoku_np1 import sudoku
+import time
 
 suText=[]
 suComment=[]
+suText2=[]
+suComment2=[]
 
 suText.append("8.534...12.4...59..1...5.686...83....9361....7...52....5...8.421.7...68.4.219...5")
 suComment.append("kleinezeitung, 14.09.2020 - leicht")
@@ -50,8 +53,32 @@ suComment.append("kleinezeitung, 04.01.2021 - mittel")
 suText.append("1......687.9.3......86..13.....8.3...4.3.1.8...7.2.....14..35......4.8.995......3")
 suComment.append("kleinezeitung, 05.01.2021 - mittel")
 
+suText.append("...8.2...6...5..9.9.8...3...6.37....13.....65....46.3...5...7.1.8..3...2...5.7...")  
+suComment.append("derstandard, 11.08.2020 - schwierig") 
+
+suText.append("....6..2.2....3..9..6...4....819..4.79.4.6.38.1..386....5...7..1..6....3.6..2....")  
+suComment.append("derstandard, 09.08.2020 - schwierig")  
+
+suText.append(".5..81...1.......249...38....481.9..2.......6..9.624....13...746.......1...17..6.")  
+suComment.append("derstandard, 10.09.2020 - schwierig")  
+
+suText.append("9...6.7..3.2.5.......8...12.95......7..1.3..4......92.87...5.......7.8.1..3.1...6")  
+suComment.append("derstandard, 09.08.2020 - extrem")
+
+suText.append("..19....86...85.3...7.6.1...34.9.......5.4.......1.42...5.7.9...1.84...77....92..")
+suComment.append("tough, solving sudoku, m. mepham")
+
+suText.append("19......5......6.....92.4.3.4.8.9.....3.6.1.....3.1.5.4.6.57.....7......3......64")
+suComment.append("evil, www.websudoku.com")
+
+# ===== currently not solved
+suText2.append(".9.7..86..31..5.2.8.6........7.5...6...3.7...5...1.7........1.9.2.6..35..54..8.7.")
+suComment2.append("diabolical, solving sudoku, m. mepham")
+
 # the number of the sudoku that should be tested
-TEST_SUDOKU_NUM = 2
+TEST_SUDOKU_NUM = 13
+
+MAX_GUESS_NUM = 1000
 
 PRINT_SUDOKU = False
 TEST_SUDOKU_FUNC = False
@@ -102,9 +129,28 @@ if __name__ == '__main__':
         mySudoku.setSuArray(suText[TEST_SUDOKU_NUM])
         mySudoku.setComment(suComment[TEST_SUDOKU_NUM])
         mySudoku.print()
-        mySudoku.solver1(True)
+
+ 
+        startTime = time.time()
+        debug = False
+ 
+        solved1 = mySudoku.solver1(debug)
+        if not solved1:
+           solved2, num_guesses = mySudoku.solver2(MAX_GUESS_NUM)
+     
+        endTime =time.time()
+        if solved1:
+            print(f"SUCCESS: Sudoku is solved with SOLVER1, elapsed time is {endTime-startTime:.3f}")
+        elif solved2:
+            print(f"Info: total of {num_guesses} guess loops done")
+            print(f"SUCCESS: Sudoku is solved with SOLVER2, elapsed time is {endTime-startTime:.3f}")
+        else:
+            print(f"FAIL:    No Sudoku solution found with SOLVER2, elapsed time is {endTime-startTime:.3f}")
+        
+            
         mySudoku.print()
 
+    PRINT_SOLUTIONS = True
     if TEST_SUDOKU_SOLVER_ALL:
         for i in range(0,len(suText)):
             print(f"==================== Sudoku number {i} ========================================")
@@ -112,6 +158,22 @@ if __name__ == '__main__':
             mySudoku.setSuArray(suText[i])
             mySudoku.setComment(suComment[i])
             print(suComment[i])
-            if mySudoku.solver1():
+            startTime = time.time()
+            debug = False
+    
+            solved1 = mySudoku.solver1(debug)
+            if not solved1:
+                solved2, num_guesses = mySudoku.solver2(MAX_GUESS_NUM)       
+            endTime =time.time()
+            if solved1:
+                print(f"SUCCESS: Sudoku is solved with SOLVER1, elapsed time is {endTime-startTime:.3f}")
+            elif solved2:
+                print(f"Info: total of {num_guesses} guess loops done")
+                print(f"SUCCESS: Sudoku is solved with SOLVER2, elapsed time is {endTime-startTime:.3f}")
+            else:
+                print(f"FAIL:    No Sudoku solution found with SOLVER2, elapsed time is {endTime-startTime:.3f}")           
+
+            if PRINT_SOLUTIONS:
                 mySudoku.print()
+
 
