@@ -1,5 +1,6 @@
-# numpy example
-# WSC, 6-Nov-2024
+# SUDOKU solver test
+# main program for testing my sudoku solver class inside sudoku_np1
+# Version 0.01, WSC, 6-Nov-2024
 
 # read a string representing a 9x9 SUDOKU into a numpy array
 
@@ -152,6 +153,7 @@ if __name__ == '__main__':
 
     PRINT_SOLUTIONS = True
     if TEST_SUDOKU_SOLVER_ALL:
+        debug = True
         for i in range(0,len(suText)):
             print(f"==================== Sudoku number {i} ========================================")
             mySudoku = sudoku()
@@ -159,11 +161,10 @@ if __name__ == '__main__':
             mySudoku.setComment(suComment[i])
             print(suComment[i])
             startTime = time.time()
-            debug = False
     
             solved1 = mySudoku.solver1(debug)
             if not solved1:
-                solved2, num_guesses = mySudoku.solver2(MAX_GUESS_NUM)       
+                solved2, num_guesses = mySudoku.solver2(MAX_GUESS_NUM,debug)       
             endTime =time.time()
             if solved1:
                 print(f"SUCCESS: Sudoku is solved with SOLVER1, elapsed time is {endTime-startTime:.3f}")

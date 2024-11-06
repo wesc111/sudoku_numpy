@@ -1,6 +1,6 @@
 # sudoku_np1 sudoku class
 # SUDOKU based on numpy
-# Version 0.0, WSC, 6-Nov-2024
+# Version 0.01, WSC, 6-Nov-2024
 
 import numpy as np
 from enum import Enum
@@ -384,22 +384,22 @@ class sudoku:
         while solved==False and i<max_guess_num:
             if debug:
                 print(f"... guess number {i}")
-            self.doAGuess()
-            solved = self.solver1(debug)
+            self.doAGuess(debug)
+            # no debug for solver1 here, as most of the trials are anyhow wrong
+            solved = self.solver1()
+            i+=1
             if solved:
                 return True, i
             else:
                 self.recall()
-            i+=1
         return False, i
-        
+
+    # doAGuess: first trial implementation, works not bad, but can be improved a lot (TBD) 
     def doAGuess(self, debug=False):
         # and do a new guess out of the candidate list
         self.calcAllCandidateList()
         guessIsDone = False
         numGuesses = random.randrange(2,6)
-        if debug:
-            print(f"doAGuess: numGuesses={numGuesses}")
         for elem in self.allCandidateList:
             row = elem.row
             col = elem.col
