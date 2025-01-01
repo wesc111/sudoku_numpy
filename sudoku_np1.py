@@ -1,33 +1,20 @@
-# sudoku_np1 sudoku class
-# SUDOKU based on numpy
-# Version 0.01, WSC, 6-Nov-2024
+""" sudoku_np1 sudoku class
+A class implementing algorithms based on algorithms used by humans to solve SUDOKUs
+Version 0.10, WSC, 27-Dec-2024"""
 
 import numpy as np
 from enum import Enum
 import random
 import time
 
+# some very basic classes for SUDOKUs are defined in following package
+from sudoku_p import *
+
 USE_RANDOM_SEED = False
 
-# Class suElemT defines the type of a Sudoku element
-class suElemT(Enum):
-    UNDEFINED = 0
-    FIXED = 1
-    SOLVED_SINGLE = 2
-    SOLVED_HIDDEN_SINGLE = 3
-    GUESS = 4
 
-# The candidate list for a sudoku element
-class candidateList():
-    row = 0
-    col = 0
-    block = 0
-    list = []
-    def print(self):
-        print(f"row={self.row}, col={self.col} block={self.block}: {self.list}")
-
-# python class to solve SUDOKUs in a human way (without backtracking)
-class sudoku:
+class sudoku_np1:
+    """python class to solve SUDOKUs in a human way (without backtracking)"""
     # a house is a group inside the Sudoku that is either row, col or block
     HOUSE_T_ROW = 0
     HOUSE_T_COL = 1
@@ -49,9 +36,11 @@ class sudoku:
             random.seed(rs)
 
     def setComment(self,string):
+        """Set comment string for actual SUDOKU"""
         self.comment = string
 
     def setSuArray(self,suText):
+        """Set actual SUDOKU by a string suText"""
         row=col=0
         for elem in suText:
             if elem=='.' or elem=='0':
@@ -72,12 +61,14 @@ class sudoku:
         self.calcAllCandidateList()
 
     def store(self):
+        """Store SUDOKU to buffer suArrayTypeStore"""
         for row in range(0,9):
             for col in range(0,9):
                 self.suArrayStore[row][col] =self.suArray[row][col]
                 self.suArrayTypeStore[row][col] = self.suArrayType[row][col]
 
     def recall(self):
+        """Restore SUDOKU from buffer suArrayTypeStore"""
         for row in range(0,9):
             for col in range(0,9):
                 self.suArray[row][col] = self.suArrayStore[row][col]
@@ -86,8 +77,8 @@ class sudoku:
     def getSuArray(self):
         return self.suArray
     
-    # central calculation of the self.allCandidateList
     def calcAllCandidateList(self):
+        """central calculation of the self.allCandidateList"""
         self.allCandidateList = []
         for row in range(0,9):
             for col in range(0,9):
@@ -99,8 +90,8 @@ class sudoku:
                     cl.list = self.calcCandidateList(row,col)
                     self.allCandidateList.append(cl)  
 
-    # calculate the candidate list for specific cell at row, col
     def calcCandidateList(self,row,col):
+        """calculate the candidate list for specific cell at row, col"""
         candidateList = [1,2,3,4,5,6,7,8,9]
         for e in self.getValListInRow(row):
             if e in candidateList:
@@ -113,8 +104,8 @@ class sudoku:
                 candidateList.remove(e)
         return candidateList   
     
-    # get the candidates of specific row, col
     def getCandidateList(self,row,col):
+        """get the candidates of specific row, col"""
         for elem in self.allCandidateList:
             if elem.row==row and elem.col==col:
                 return elem.list
@@ -152,8 +143,8 @@ class sudoku:
             print(f"{e},",end='')
         print(" ")
 
-    # get the block number of element defined by row, col
     def getBlockNum(self,row,col):
+        """get the block number of element defined by row, col"""
         return int(col/3) + 3*int(row/3)
 
     def getValListInBlock(self,blocknum):
@@ -175,9 +166,10 @@ class sudoku:
             print(f"{e},",end='')
         print(" ")
   
-    # print the actual list of all candidates
-    # note that the candidates need to be calculated before, eg with calcAllCandidateList()
+ 
     def printAllCandidateList(self):
+        """ print the actual list of all candidates
+        note that the candidates need to be calculated before, eg with calcAllCandidateList()"""
         print("List of all candidates in actual sudoku:")
         for elem in self.allCandidateList:
             elem.print()
@@ -202,10 +194,11 @@ class sudoku:
                 numSolvedSinglesFound+=1
         return numSolvedSinglesFound
 
-    # find lone pairs: pairs within a row, col or block means that these can be removed in the candidate lists of the corresponding house
+    #
     def findLonePairs(self):
-        # TBD, not finished now
-        # i=0...row, 1...col, 2...block
+        """find lone pairs: pairs within a row, col or block means that these can be removed in the candidate lists of the corresponding house
+        TBD, not finished now
+        i=0...row, 1...col, 2...block"""
         for i in range(0,2):
             for j in (range(0,9)):
                 ddList=[]
@@ -225,8 +218,9 @@ class sudoku:
                             print(f"LONE block={j}: {dupFlag}, {dup}, {ddList}")
         return False
 
-    # find singles in the input list cc
+    
     def findSingle(self, cc):
+        """find singles in the input list cc"""
         oc = [0,0,0,0,0,0,0,0,0,0]
         for elem in cc:
             oc[elem] += 1
@@ -238,9 +232,9 @@ class sudoku:
                 count += 1
         return count, retVal
     
-    # solve hidden singles
-    # hidden singles are elements that appear just once in a row, col or block list
     def solveHiddenSingles(self,debug=False):
+        """solve hidden singles
+        hidden singles are elements that appear just once in a row, col or block list"""
         self.calcAllCandidateList()
         hiddenSinglesFound = 0
         for row in range(0,9):
@@ -286,8 +280,8 @@ class sudoku:
         
         return hiddenSinglesFound
     
-    # return a list of row,col indices for a block number
     def blockIndexList(self,block):
+        """return a list of row,col indices for a block number"""
         if   block==0: 
             return [[0,0],[0,1],[0,2], [1,0],[1,1],[1,2], [2,0],[2,1],[2,2]]
         elif block==1: 
@@ -310,18 +304,21 @@ class sudoku:
             return [[6,6],[6,7],[6,8], [7,6],[7,7],[7,8], [8,6],[8,7],[8,8]]        
  
         else:           
-            return [[0,0],[0,0],[0,0], [0,0],[0,0],[0,0], [0,0],[0,0],[0,0]]       
-    # return a list of indices for a row
+            return [[0,0],[0,0],[0,0], [0,0],[0,0],[0,0], [0,0],[0,0],[0,0]] 
+              
     def rowIndexList(self,row):
+       """return a list of indices for a row"""
        return [[row,0],[row,1],[row,2], [row,3],[row,4],[row,5], [row,6],[row,7],[row,8]]
-    # return a list of indices for a column
+    
     def colIndexList(self,col):
+       """return a list of indices for a column"""
        return [[0,col],[1,col],[2,col], [3,col],[4,col],[5,col], [6,col],[7,col],[8,col]]
 
-    # type: row=0, col=1, block=2
-    # num ... row/block/col number (0-8)
-    # singleList ... list of hidden singles (found with findHiddenSingles)
+   
     def setHiddenSingles(self, type, num, singleList):
+        """type: row=0, col=1, block=2
+        num ... row/block/col number (0-8)
+        singleList ... list of hidden singles (found with findHiddenSingles)"""
         if type==0:
             for elem in singleList:
                 row = num
@@ -345,8 +342,8 @@ class sudoku:
                         self.suArray[row,col] = elem
                         self.suArrayType[row,col] = suElemT.SOLVED_HIDDEN_SINGLE
 
-    # check if there are duplicates in the list ll
     def checkDuplicates(self, ll):
+        """check if there are duplicates in the list ll"""
         for i in range(0,len(ll)):
             for j in range(0,len(ll)):
                 if i!=j:
@@ -354,9 +351,10 @@ class sudoku:
                         return True, ll[i]
         return False, [0,0]
 
-    # SOLVER1: running algorithm to solve SUDOKU just with "paper & pencil" methods
-    # return value is True if sudoku is solved
+   
     def solver1(self, debug=False):
+        """solver algorithm to solve SUDOKU just with "paper & pencil" methods
+        return value is True if sudoku is solved"""
         i=m=0
         n=1
         while n>0 or m>0:
@@ -374,9 +372,9 @@ class sudoku:
             i+=1
         return self.checkSolved()
     
-    # solver with guess loop
-    # return value is True if sudoku is solved + number of guesses
     def solver2(self, max_guess_num, debug=False):
+        """ solver algorithm doing guesses and run solver 1 with that guess
+        return value is True if sudoku is solved + number of guesses"""
         self.store()
         solved = False
         i=0
@@ -393,9 +391,9 @@ class sudoku:
             else:
                 self.recall()
         return False, i
-
-    # doAGuess: first trial implementation, works not bad, but can be improved a lot (TBD) 
+      
     def doAGuess(self, debug=False):
+        """doAGuess: first trial implementation, works not bad, but can be improved a lot (TBD)"""
         # and do a new guess out of the candidate list
         self.calcAllCandidateList()
         guessIsDone = False
@@ -413,10 +411,73 @@ class sudoku:
                     print(f"doAGuess: value at row={elem.row} col={elem.col} set to {val} (index={index})")
                 numGuesses-=1
 
-    # print the sudoku array
-    def print(self):
-        print(self.suArray)
-    
-    # print the comment / just for information about the origin of this specific SUDOKU
-    def printComment(self):
-        print(f"===== {self.comment}")
+    def checkValidHouse(self, houseList):
+        """check if the house list is valid (each value from 1 to 9 shall be exactly one time within the list)"""
+        validList=[1,2,3,4,5,6,7,8,9]
+        if len(houseList)!=9:
+            return False
+        for i in range(0,9):
+            if houseList[i]<1 or  houseList[i]>9:
+                return False
+            if houseList[i] in validList:
+                validList.remove(houseList[i])
+        if len(validList)==0:
+            return True
+        return False       
+
+    def checkSudokuIsValid(self):
+        """check if the actual sudoku is valid by checking all rows, columns and blocks of SUDOKU
+        for values 1 to 9 (each one shall exist exactly one time)"""
+        retVal = True
+        for i in range(0,9):
+            actList=self.getValListInRow(i)
+            checkResult=self.checkValidHouse(actList)
+            if checkResult==False:
+                print(f"Check result for row  {i} failed: {checkResult}")
+                return False
+        for i in range(0,9):
+            actList=self.getValListInCol(i)
+            checkResult=self.checkValidHouse(actList)
+            if checkResult==False:
+                print(f"Check result for col  {i} failed: {checkResult}")
+                return False
+        for i in range(0,9):
+            actkList=self.getValListInBlock(i)
+            checkResult=self.checkValidHouse(actList)
+            if checkResult==False:
+                print(f"Check result for block {i} failed: {checkResult}")
+                return False
+            
+        # if no error was found up to this point, the SUDOKU is valid
+        return True
+
+
+    def print(self, rstFlag=False):
+        """print the sudoku array
+        rstFlag ... if true, print table in restructed text format"""
+
+        def printRst():
+            """print the SUDOKU using restructed text format (for sphinx doc system, 
+            see https://www.sphinx-doc.org/en/master/usage/quickstart.html)"""
+            print("\n+---+---+---+---+---+---+---+---+---+")
+            for row in self.suArray:
+                i=0
+                for elem in row: 
+                    if i==0:
+                        print("|",end="")
+                    if elem==0:
+                        elem='.'
+                    print(f" {elem} |",end="")
+                    if i<8:
+                        i+=1
+                    else:
+                        print("\n+---+---+---+---+---+---+---+---+---+")
+                        i=0
+        
+        if len(self.comment)>0:
+            print(f"===== {self.comment}")
+        if not rstFlag:
+            print(self.suArray)
+        else:
+            printRst()   
+

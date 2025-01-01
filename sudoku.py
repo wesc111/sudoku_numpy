@@ -1,123 +1,100 @@
-# SUDOKU solver test
-# main program for testing my sudoku solver class inside sudoku_np1
-# Version 0.01, WSC, 6-Nov-2024
+#!/usr/local/bin/python3
+# sudoku.py: program to solve SUDOKU and generate pretty print documentation
+VERSION = "0.10"
+# Version 0.10, WSC, 28-Dec-2024
 
-# read a string representing a 9x9 SUDOKU into a numpy array
-
-from sudoku_np1 import sudoku
+from sudoku_np1 import sudoku_np1
 from sudoku_io import sudoku_io
+import sys
 
-import time
+DEBUG_FLAG=False
+SU_NUM_START=1
+SU_NUM_STOP=SU_NUM_START+1
+SU_NUM_ALL=False
+PRINT_FLAG=True
+MAX_GUESS_NUM = 100
+USE_SOLVER2 = False
 
-# ===== currently not solved
-SuTextInt=[]
-suCommentInt=[]
-SuTextInt.append(".9.7..86..31..5.2.8.6........7.5...6...3.7...5...1.7........1.9.2.6..35..54..8.7.")
-suCommentInt.append("diabolical, solving sudoku, m. mepham")
+# parse input arguments
+# example usage: $python sudoku_ex1.py -num=4
+if len(sys.argv)>=2:
+    for i in range(1,len(sys.argv)):
+        actArg = sys.argv[i]
+        if DEBUG_FLAG:
+            print(f"... processing argument: {actArg}")
+        if "-num" in actArg:
+            n = int(actArg.replace("-num=", ""))
+            SU_NUM_START=n
+            SU_NUM_STOP=SU_NUM_START+1
+        if "-start" in actArg:
+            n = int(actArg.replace("-start=", ""))
+            SU_NUM_START=n
+            SU_NUM_STOP=SU_NUM_START+1
+        if "-stop" in actArg:
+            n = int(actArg.replace("-stop=", ""))
+            SU_NUM_STOP=n+1
+        if "-all" in actArg:
+            SU_NUM_ALL=True
+        if "-noprint" in actArg:
+            PRINT_FLAG=False
+        if "-help" in actArg:
+            print("Optional arguments for sudoku_ex1:")
+            print("    -help            ... print help")
+            print("    -v               ... show program version")
+            print("    -num=3           ... solve SUDOKU #3")
+            print("    -start=3 -stop=8 ... solve SUDOKU #3 to #8")
+            print("    -all             ... solve all SUDOKUs read from input file")
+            print("    -noprint         ... no print of SUDOKU solution, just print PASS/FAIL results")
+            sys.exit()
+        if "-v" in actArg:
+            print(f"    Welcome to sudoku_ex1, this is version {VERSION}")
+            sys.exit()
 
-# the number of the sudoku that should be tested
-TEST_SUDOKU_NUM = 13
-
-MAX_GUESS_NUM = 1000
-
-PRINT_SUDOKU = False
-TEST_SUDOKU_FUNC = False
-TEST_SUDOKU_CAND = False
-TEST_SUDOKU_LONE = False
-TEST_SUDOKU_HIDDEN_SINGLE = False
-TEST_SUDOKU_SOLVER = False
-TEST_SUDOKU_SOLVER_ALL = True
-
+# read the input file into arrays suText, suComment
 myIo = sudoku_io()
-myIo.readFile("sudoku_1.txt")
+numRead = myIo.readFile("sudoku_1.txt")
 suText, suComment = myIo.getSudokuList()
 
-if __name__ == '__main__':
-    print(f"Total of {len(suText)} Sudokus available")
-    if TEST_SUDOKU_NUM<0:
-        TEST_SUDOKU_NUM=0
-    if TEST_SUDOKU_NUM>=len(suText):
-        TEST_SUDOKU_NUM=len(suText)-1
-    mySudoku = sudoku()
-    mySudoku.setSuArray(suText[TEST_SUDOKU_NUM])
-    mySudoku.setComment(suComment[TEST_SUDOKU_NUM])
+# now create a sudoku class and provide SUDOKU to that class
+mySudoku = sudoku_np1()
 
-    if PRINT_SUDOKU:
-        print(f"SUDOKU number: {TEST_SUDOKU_NUM}")
-        mySudoku.printComment() 
-        mySudoku.print()
+if SU_NUM_ALL:
+    SU_NUM_START=0
+    SU_NUM_STOP=numRead
 
-    if TEST_SUDOKU_FUNC:
-        for i in range(0,9):
-            mySudoku.printValListInBlock(i)
-        for i in range(0,9):
-            mySudoku.printValListInRow(i)
-        for i in range(0,9):
-            mySudoku.printValListInCol(i)
+for i in range(SU_NUM_START,SU_NUM_STOP):
+    # set the sudoku by providing it in string/text form
+    mySudoku.setSuArray(suText[i])
+    mySudoku.setComment(suComment[i])
+    # print the unsolved SUDOKU
+    if PRINT_FLAG:
+        print(f"\nInput SUDOKU array #{i}")
+        mySudoku.print(True)
 
-    if TEST_SUDOKU_CAND:
-        mySudoku.calcAllCandidateList()
-        mySudoku.printAllCandidateList()      
-
-    if TEST_SUDOKU_LONE:
-         mySudoku.findLonePairs()
-
-    if TEST_SUDOKU_HIDDEN_SINGLE:
-        mySudoku.findHiddenSingles()
-        mySudoku.print()
-
-    # run solver just with solveSingles() algorithm
-    if TEST_SUDOKU_SOLVER:
-        print(f"==================== Sudoku number {TEST_SUDOKU_NUM} ========================================")
-        mySudoku = sudoku()
-        mySudoku.setSuArray(suText[TEST_SUDOKU_NUM])
-        mySudoku.setComment(suComment[TEST_SUDOKU_NUM])
-        mySudoku.print()
-        mySudoku.printComment()
-
-        startTime = time.time()
-        debug = False
- 
-        solved1 = mySudoku.solver1(debug)
-        if not solved1:
-           solved2, num_guesses = mySudoku.solver2(MAX_GUESS_NUM)
-     
-        endTime =time.time()
-        if solved1:
-            print(f"SUCCESS: Sudoku is solved with SOLVER1, elapsed time is {endTime-startTime:.3f}")
-        elif solved2:
-            print(f"Info: total of {num_guesses} guess loops done")
-            print(f"SUCCESS: Sudoku is solved with SOLVER2, elapsed time is {endTime-startTime:.3f}")
-        else:
-            print(f"FAIL:    No Sudoku solution found with SOLVER2, elapsed time is {endTime-startTime:.3f}")
-        
-            
-        mySudoku.print()
-
-    PRINT_SOLUTIONS = True
-    if TEST_SUDOKU_SOLVER_ALL:
-        debug = False
-        for i in range(0,len(suText)):
-            print(f"==================== Sudoku number {i} ========================================")
-            mySudoku = sudoku()
-            mySudoku.setSuArray(suText[i])
-            mySudoku.setComment(suComment[i])
-            print(suComment[i])
-            startTime = time.time()
-    
-            solved1 = mySudoku.solver1(debug)
-            if not solved1:
-                solved2, num_guesses = mySudoku.solver2(MAX_GUESS_NUM,debug)       
-            endTime =time.time()
-            if solved1:
-                print(f"SUCCESS: Sudoku is solved with SOLVER1, elapsed time is {endTime-startTime:.3f}")
-            elif solved2:
-                print(f"Info: total of {num_guesses} guess loops done")
-                print(f"SUCCESS: Sudoku is solved with SOLVER2, elapsed time is {endTime-startTime:.3f}")
+    # now call a solver method
+    solved = mySudoku.solver1(False)
+    # if solver1 does not succeed, call solver2
+    if solved:
+        print(f"\n=====> PASS: Solved SUDOKU #{i} with solver1")
+        if mySudoku.checkSudokuIsValid()==False:
+            print(f"\n=====> ERROR in solution for SUDOKU array #{i}: SUDOKU is not valid")
+    if not solved and USE_SOLVER2:
+        solved, num_guesses = mySudoku.solver2(MAX_GUESS_NUM)
+        if solved:
+            if mySudoku.checkSudokuIsValid()==False:
+                print(f"\n=====> ERROR in solution for SUDOKU array #{i}: SUDOKU is not valid",end="")
+                solved=False
             else:
-                print(f"FAIL:    No Sudoku solution found with SOLVER2, elapsed time is {endTime-startTime:.3f}")           
+                print(f"\n=====> PASS: Solved SUDOKU #{i} with solver2")
+ 
+    
+    if not solved:
+            print(f"\n=====> FAIL: No solution found for SUDOKU #{i} with selected solver algorithms")
+            mySudoku.printAllCandidateList()
+    # finally check if the solution is valied
 
-            if PRINT_SOLUTIONS:
-                mySudoku.print()
-
-
+    # print the solved SUDOKU
+    if PRINT_FLAG:
+        mySudoku.checkSudokuIsValid()
+        print(f"\nSolution SUDOKU array for #{i}")
+        mySudoku.print(True)

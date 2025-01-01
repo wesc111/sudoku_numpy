@@ -10,6 +10,8 @@ class sudoku_io:
     suComment=[]
 
     def readFile(self, fileName):
+        """readFile(filename) read SUDOKU strings from file line by line
+        return value: of lines that were read from the file"""
         i=0
         fp = open(fileName,"r")
         for elem in fp:
@@ -27,6 +29,7 @@ class sudoku_io:
                 self.suComment.append(comStr)
                 i+=1
         print(f"sudoku_io: Total of {i} lines read from file {fileName}")
+        return i
  
     def getSudokuList(self):
         return self.suText, self.suComment
