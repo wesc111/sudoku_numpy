@@ -24,6 +24,8 @@ class sudoku_io:
             suStr=lineTokens[0]
             if len(lineTokens)>1:
                 comStr=lineTokens[1]
+            else:
+                comStr=""
             if len(suStr)==81:
                 self.suText.append(suStr)
                 self.suComment.append(comStr)

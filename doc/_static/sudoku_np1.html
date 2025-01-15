@@ -11,7 +11,7 @@
 <td class="extra"><a href=".">index</a><br><a href="file:/Users/werner/Documents/devel_mac/projects_git/sudoku_numpy/sudoku_np1.py">/Users/werner/Documents/devel_mac/projects_git/sudoku_numpy/sudoku_np1.py</a></td></tr></table>
     <p><span class="code"><a href="#sudoku_np1">sudoku_np1</a>&nbsp;sudoku&nbsp;class<br>
 A&nbsp;class&nbsp;implementing&nbsp;algorithms&nbsp;based&nbsp;on&nbsp;algorithms&nbsp;used&nbsp;by&nbsp;humans&nbsp;to&nbsp;solve&nbsp;SUDOKUs<br>
-Version&nbsp;0.10,&nbsp;WSC,&nbsp;27-Dec-2024</span></p>
+Version&nbsp;0.11,&nbsp;WSC,&nbsp;3-Jan-2025</span></p>
 <p>
 <table class="section">
 <tr class="decor pkg-content-decor heading-text">
@@ -56,9 +56,17 @@ Version&nbsp;0.10,&nbsp;WSC,&nbsp;27-Dec-2024</span></p>
 
 <dl><dt><a name="sudoku_np1-checkSolved"><strong>checkSolved</strong></a>(self)</dt></dl>
 
+<dl><dt><a name="sudoku_np1-checkSudokuIsSolved"><strong>checkSudokuIsSolved</strong></a>(self)</dt><dd><span class="code">check&nbsp;that&nbsp;SUDOKU&nbsp;is&nbsp;valid&nbsp;and&nbsp;no&nbsp;element&nbsp;is&nbsp;0&nbsp;(unsolved)</span></dd></dl>
+
+<dl><dt><a name="sudoku_np1-checkSudokuIsValid"><strong>checkSudokuIsValid</strong></a>(self, printFlag=False)</dt><dd><span class="code">check&nbsp;if&nbsp;the&nbsp;actual&nbsp;sudoku&nbsp;is&nbsp;valid&nbsp;by&nbsp;checking&nbsp;all&nbsp;rows,&nbsp;columns&nbsp;and&nbsp;blocks&nbsp;of&nbsp;SUDOKU<br>
+for&nbsp;values&nbsp;1&nbsp;to&nbsp;9&nbsp;(each&nbsp;one&nbsp;shall&nbsp;exist&nbsp;exactly&nbsp;one&nbsp;time)</span></dd></dl>
+
+<dl><dt><a name="sudoku_np1-checkValidHouse"><strong>checkValidHouse</strong></a>(self, houseList)</dt><dd><span class="code">check&nbsp;if&nbsp;the&nbsp;house&nbsp;list&nbsp;is&nbsp;valid&nbsp;(each&nbsp;value&nbsp;from&nbsp;1&nbsp;to&nbsp;9&nbsp;shall&nbsp;be&nbsp;exactly&nbsp;one&nbsp;time&nbsp;within&nbsp;the&nbsp;list)</span></dd></dl>
+
 <dl><dt><a name="sudoku_np1-colIndexList"><strong>colIndexList</strong></a>(self, col)</dt><dd><span class="code">return&nbsp;a&nbsp;list&nbsp;of&nbsp;indices&nbsp;for&nbsp;a&nbsp;column</span></dd></dl>
 
-<dl><dt><a name="sudoku_np1-doAGuess"><strong>doAGuess</strong></a>(self, debug=False)</dt><dd><span class="code">doAGuess:&nbsp;first&nbsp;trial&nbsp;implementation,&nbsp;works&nbsp;not&nbsp;bad,&nbsp;but&nbsp;can&nbsp;be&nbsp;improved&nbsp;a&nbsp;lot&nbsp;(TBD)</span></dd></dl>
+<dl><dt><a name="sudoku_np1-doAGuess"><strong>doAGuess</strong></a>(self, debug=False)</dt><dd><span class="code">doAGuess:&nbsp;first&nbsp;trial&nbsp;implementation,&nbsp;works&nbsp;not&nbsp;bad,&nbsp;but&nbsp;can&nbsp;be&nbsp;improved&nbsp;a&nbsp;lot&nbsp;(TBD)<br>
+return&nbsp;value:&nbsp;True&nbsp;if&nbsp;guess&nbsp;is&nbsp;done,&nbsp;false&nbsp;means&nbsp;no&nbsp;guess&nbsp;was&nbsp;found</span></dd></dl>
 
 <dl><dt><a name="sudoku_np1-findLonePairs"><strong>findLonePairs</strong></a>(self)</dt><dd><span class="code">find&nbsp;lone&nbsp;pairs:&nbsp;pairs&nbsp;within&nbsp;a&nbsp;row,&nbsp;col&nbsp;or&nbsp;block&nbsp;means&nbsp;that&nbsp;these&nbsp;can&nbsp;be&nbsp;removed&nbsp;in&nbsp;the&nbsp;candidate&nbsp;lists&nbsp;of&nbsp;the&nbsp;corresponding&nbsp;house<br>
 TBD,&nbsp;not&nbsp;finished&nbsp;now<br>
@@ -78,15 +86,16 @@ i=0...row,&nbsp;1...col,&nbsp;2...block</span></dd></dl>
 
 <dl><dt><a name="sudoku_np1-getValListInRow"><strong>getValListInRow</strong></a>(self, num)</dt></dl>
 
-<dl><dt><a name="sudoku_np1-print"><strong>print</strong></a>(self)</dt><dd><span class="code">print&nbsp;the&nbsp;sudoku&nbsp;array</span></dd></dl>
+<dl><dt><a name="sudoku_np1-numDoubleCandidates"><strong>numDoubleCandidates</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="sudoku_np1-print"><strong>print</strong></a>(self, printType=0)</dt><dd><span class="code">print&nbsp;the&nbsp;sudoku&nbsp;array<br>
+rstFlag&nbsp;...&nbsp;if&nbsp;true,&nbsp;print&nbsp;table&nbsp;in&nbsp;restructed&nbsp;text&nbsp;format<br>
+printType&nbsp;...&nbsp;0:&nbsp;simple&nbsp;output,&nbsp;1:&nbsp;RST&nbsp;format,&nbsp;2:&nbsp;RST&nbsp;format&nbsp;with&nbsp;candidates</span></dd></dl>
 
 <dl><dt><a name="sudoku_np1-printAllCandidateList"><strong>printAllCandidateList</strong></a>(self)</dt><dd><span class="code">print&nbsp;the&nbsp;actual&nbsp;list&nbsp;of&nbsp;all&nbsp;candidates<br>
 note&nbsp;that&nbsp;the&nbsp;candidates&nbsp;need&nbsp;to&nbsp;be&nbsp;calculated&nbsp;before,&nbsp;eg&nbsp;with&nbsp;<a href="#sudoku_np1-calcAllCandidateList">calcAllCandidateList</a>()</span></dd></dl>
 
-<dl><dt><a name="sudoku_np1-printComment"><strong>printComment</strong></a>(self)</dt><dd><span class="code">print&nbsp;the&nbsp;comment&nbsp;/&nbsp;just&nbsp;for&nbsp;information&nbsp;about&nbsp;the&nbsp;origin&nbsp;of&nbsp;this&nbsp;specific&nbsp;SUDOKU</span></dd></dl>
-
-<dl><dt><a name="sudoku_np1-printRst"><strong>printRst</strong></a>(self)</dt><dd><span class="code">print&nbsp;the&nbsp;SUDOKU&nbsp;using&nbsp;restructed&nbsp;text&nbsp;format&nbsp;(for&nbsp;sphinx&nbsp;doc&nbsp;system,&nbsp;<br>
-see&nbsp;<a href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">https://www.sphinx-doc.org/en/master/usage/quickstart.html</a>)</span></dd></dl>
+<dl><dt><a name="sudoku_np1-printAllCandidates"><strong>printAllCandidates</strong></a>(self)</dt><dd><span class="code">print&nbsp;all&nbsp;canditates&nbsp;and&nbsp;solution&nbsp;fields&nbsp;of&nbsp;the&nbsp;actual&nbsp;SUDOKU&nbsp;in&nbsp;matrix&nbsp;form</span></dd></dl>
 
 <dl><dt><a name="sudoku_np1-printValListInBlock"><strong>printValListInBlock</strong></a>(self, num)</dt></dl>
 

@@ -1,6 +1,6 @@
 """ sudoku_np1 sudoku class
 A class implementing algorithms based on algorithms used by humans to solve SUDOKUs
-Version 0.10, WSC, 27-Dec-2024"""
+Version 0.11, WSC, 3-Jan-2025"""
 
 import numpy as np
 from enum import Enum
@@ -11,7 +11,6 @@ import time
 from sudoku_p import *
 
 USE_RANDOM_SEED = False
-
 
 class sudoku_np1:
     """python class to solve SUDOKUs in a human way (without backtracking)"""
@@ -83,11 +82,11 @@ class sudoku_np1:
         for row in range(0,9):
             for col in range(0,9):
                 if self.suArrayType[row][col] == suElemT.UNDEFINED:
-                    cl = candidateList()
-                    cl.row = row
-                    cl.col = col
-                    cl.block = self.getBlockNum(row,col)
-                    cl.list = self.calcCandidateList(row,col)
+                    cl = candidateList(row,col,self.calcCandidateList(row,col))
+                    #cl.row = row
+                    #cl.col = col
+                    #cl.block = self.getBlockNum(row,col)
+                    #cl.list = self.calcCandidateList(row,col)
                     self.allCandidateList.append(cl)  
 
     def calcCandidateList(self,row,col):
@@ -172,7 +171,33 @@ class sudoku_np1:
         note that the candidates need to be calculated before, eg with calcAllCandidateList()"""
         print("List of all candidates in actual sudoku:")
         for elem in self.allCandidateList:
-            elem.print()
+            elem.print(1)
+    
+    def printAllCandidates(self):
+        """ print all canditates and solution fields of the actual SUDOKU in matrix form"""
+        print("Solution fields and candidates for actual sudoku:\n")
+        for row in range(0,9):
+            if row==0 or row==3 or row==6:
+                print(" +-----------------------------+-----------------------------+----------------------------+")
+            for col in range(0,9):
+                if self.suArrayTypeStore[row][col]==suElemT.UNDEFINED:
+                    myCandidateList = candidateList(row,col,self.calcCandidateList(row, col))
+                    if col==0 or col==3 or col==6:
+                        print(" | ",end="")
+                    myCandidateList.print(1)
+                    if col==8:
+                        print("| ")
+                else:
+                    myCandidateList = candidateList(row,col,[self.suArray[row][col]])
+                    if col==0 or col==3 or col==6:
+                        print(" | ",end="")
+                    if self.suArrayType[row][col]==suElemT.FIXED:
+                        myCandidateList.print(1,True)
+                    else:
+                        myCandidateList.print(1,False)
+                    if col==8:
+                        print("| ")
+        print(" +-----------------------------+-----------------------------+----------------------------+\n")
 
     def checkSolved(self):
         solvedFlag = True
@@ -384,32 +409,58 @@ class sudoku_np1:
                 print(f"... guess number {i}")
             self.doAGuess(debug)
             # no debug for solver1 here, as most of the trials are anyhow wrong
-            solved = self.solver1()
+            solved1 = self.solver1()
+            solved2 = self.checkSudokuIsValid()
+            solved = solved1 and solved2
             i+=1
             if solved:
+                print(f"...found solution with SOLVER2 after {i} guesses")
                 return True, i
             else:
                 self.recall()
+                # recalc the candidate list after restored
+                self.calcAllCandidateList()       
         return False, i
-      
+
+    def numDoubleCandidates(self):
+        self.calcAllCandidateList()
+        n = 0
+        for elem in self.allCandidateList:
+            if len(elem.list)==2:
+                n+=1
+        return n
+
     def doAGuess(self, debug=False):
-        """doAGuess: first trial implementation, works not bad, but can be improved a lot (TBD)"""
+        """doAGuess: first trial implementation, works not bad, but can be improved a lot (TBD)
+        return value: True if guess is done, false means no guess was found"""
         # and do a new guess out of the candidate list
         self.calcAllCandidateList()
-        guessIsDone = False
-        numGuesses = random.randrange(2,6)
+        numDoubleCandidates=self.numDoubleCandidates()
+        if numDoubleCandidates>0:
+            randDoubleCandNum=random.randrange(0,numDoubleCandidates)
+        else:
+            return False
+        if debug:
+            print(f"Number of double candidates: {numDoubleCandidates}")
+            print(f"Randomized double candidate num: {randDoubleCandNum}")
+        randDoubleCandAct=0
         for elem in self.allCandidateList:
             row = elem.row
             col = elem.col
             # guess is done on elements with 2 entries in list
-            if len(elem.list)==2 and numGuesses>0:
+            if len(elem.list)==2 and randDoubleCandAct==randDoubleCandNum:
+                # select one of the two elements in candidateList
                 index = random.randrange(0,2)
                 val = elem.list[index]
                 self.suArray[row][col] = val
                 self.suArrayType [row][col] = suElemT.GUESS
                 if debug:
                     print(f"doAGuess: value at row={elem.row} col={elem.col} set to {val} (index={index})")
-                numGuesses-=1
+                return True
+            elif len(elem.list)==2:
+                randDoubleCandAct+=1
+        return False
+            
 
     def checkValidHouse(self, houseList):
         """check if the house list is valid (each value from 1 to 9 shall be exactly one time within the list)"""
@@ -425,36 +476,47 @@ class sudoku_np1:
             return True
         return False       
 
-    def checkSudokuIsValid(self):
+    def checkSudokuIsValid(self,printFlag=False):
         """check if the actual sudoku is valid by checking all rows, columns and blocks of SUDOKU
         for values 1 to 9 (each one shall exist exactly one time)"""
         retVal = True
         for i in range(0,9):
             actList=self.getValListInRow(i)
             checkResult=self.checkValidHouse(actList)
-            if checkResult==False:
+            if (checkResult==False) and printFlag:
                 print(f"Check result for row  {i} failed: {checkResult}")
                 return False
         for i in range(0,9):
             actList=self.getValListInCol(i)
             checkResult=self.checkValidHouse(actList)
-            if checkResult==False:
+            if (checkResult==False) and printFlag:
                 print(f"Check result for col  {i} failed: {checkResult}")
                 return False
         for i in range(0,9):
             actkList=self.getValListInBlock(i)
             checkResult=self.checkValidHouse(actList)
-            if checkResult==False:
+            if (checkResult==False) and printFlag:
                 print(f"Check result for block {i} failed: {checkResult}")
                 return False
-            
         # if no error was found up to this point, the SUDOKU is valid
+        return True
+    
+    def checkSudokuIsSolved(self):
+        """check that SUDOKU is valid and no element is 0 (unsolved)"""
+        if not self.checkSudokuIsValid():
+            return False
+        for row in range(0,9):
+            for col in range(0,9):
+                if self.suArray[row][col]==0:
+                    return False
+        # if no error was found up to this point, the SUDOKU is solved
         return True
 
 
-    def print(self, rstFlag=False):
+    def print(self, printType=0):
         """print the sudoku array
-        rstFlag ... if true, print table in restructed text format"""
+        rstFlag ... if true, print table in restructed text format
+        printType ... 0: simple output, 1: RST format, 2: RST format with candidates"""
 
         def printRst():
             """print the SUDOKU using restructed text format (for sphinx doc system, 
@@ -473,11 +535,14 @@ class sudoku_np1:
                     else:
                         print("\n+---+---+---+---+---+---+---+---+---+")
                         i=0
-        
+            print("")
+
         if len(self.comment)>0:
             print(f"===== {self.comment}")
-        if not rstFlag:
+        if printType==0:
             print(self.suArray)
-        else:
-            printRst()   
+        elif printType==1:
+            printRst()
+        elif printType==2:
+            self.printAllCandidates()  
 
