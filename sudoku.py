@@ -2,7 +2,7 @@
 """ program to solve SUDOKUs that can be read from a file
 For command description, start $python3 sudoku.py -help
 Version 0.11, WSC, 3-Jan-2025"""
-VERSION = "0.11"
+VERSION = "0.12"
 VERSION_DATE = "3-Jan-2025"
 
 # numbering of SUDOKUS in input file:
